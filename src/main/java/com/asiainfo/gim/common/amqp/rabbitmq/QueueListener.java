@@ -25,10 +25,10 @@ public abstract class QueueListener
 	private static Log log = LogFactory.getLog(QueueListener.class);
 
 	private ConnectionFactory connectionFactory;
-	private String queueName;
+	protected String queueName;
 	private boolean autoQueue;
-	private String exchange;
-	private String routingKey;
+	protected String exchange;
+	protected String routingKey;
 
 	public void setConnectionFactory(ConnectionFactory connectionFactory)
 	{
