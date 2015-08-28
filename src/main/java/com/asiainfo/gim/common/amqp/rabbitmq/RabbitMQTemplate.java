@@ -3,13 +3,8 @@
  */
 package com.asiainfo.gim.common.amqp.rabbitmq;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.AMQP.BasicProperties;
-import com.rabbitmq.client.AMQP.BasicProperties.Builder;
 import com.rabbitmq.client.AMQP.Queue.BindOk;
 import com.rabbitmq.client.AMQP.Queue.DeclareOk;
 import com.rabbitmq.client.Channel;
@@ -30,7 +25,7 @@ public class RabbitMQTemplate
 		this.connectionFactory = connectionFactory;
 	}
 
-	public void send(String exchange, String routingKey, EventMessage em)
+	public void send(String exchange, String routingKey, Object obj)
 	{
 		Connection conn = null;
 		Channel channel = null;
@@ -39,7 +34,7 @@ public class RabbitMQTemplate
 		{
 			conn = connectionFactory.newConnection();
 			channel = conn.createChannel();
-			channel.basicPublish(exchange, routingKey, buildBasicProperties(em.getContext()), format(em.getMessage()));
+			channel.basicPublish(exchange, routingKey, null, format(obj));
 		}
 		catch (Exception e)
 		{
@@ -51,7 +46,7 @@ public class RabbitMQTemplate
 			close(conn);
 		}
 	}
-	
+
 	public DeclareOk queueDeclare(String queue)
 	{
 		Connection conn = null;
@@ -73,7 +68,7 @@ public class RabbitMQTemplate
 			close(conn);
 		}
 	}
-	
+
 	public com.rabbitmq.client.AMQP.Exchange.DeclareOk exchangeDeclare(String exchange, String type)
 	{
 		Connection conn = null;
@@ -95,7 +90,7 @@ public class RabbitMQTemplate
 			close(conn);
 		}
 	}
-	
+
 	public BindOk bind(String exchange, String queue, String routingKey)
 	{
 		Connection conn = null;
@@ -117,7 +112,7 @@ public class RabbitMQTemplate
 			close(conn);
 		}
 	}
-	
+
 	private byte[] format(Object message)
 	{
 		try
@@ -128,22 +123,6 @@ public class RabbitMQTemplate
 		{
 			return String.valueOf(message).getBytes();
 		}
-	}
-	
-	private BasicProperties buildBasicProperties(Context context)
-	{
-		Builder builder = new Builder();
-		
-		Map<String, Object> headers = new HashMap<String, Object>();
-		headers.put("tag", context.getTag());
-		headers.put("time", context.getTime());
-		headers.put("resourceId", context.getResourceId());
-		headers.put("resourceType", context.getResourceType());
-		headers.put("collector", context.getCollector());
-		
-		builder.headers(headers);
-		
-		return builder.build();
 	}
 
 	private void close(Channel channel)
